@@ -1,0 +1,4 @@
+# 4.7B (Whisper large-v3 encoder + Ministral 3B); function calling from voice; speech languages exclude Vietnamese.
+_target_: lifemate.models.voxtral.Voxtral
+model_id: mistralai/Voxtral-Mini-3B-2507
+dtype: bfloat16

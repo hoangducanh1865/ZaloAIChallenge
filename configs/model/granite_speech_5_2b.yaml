@@ -1,0 +1,4 @@
+# 2.3B; trained for ASR / speech translation in en, fr, de, es, pt, ja (no Vietnamese): a lower reference point.
+_target_: lifemate.models.granite_speech.GraniteSpeech
+model_id: ibm-granite/granite-speech-5.0-2b
+dtype: bfloat16

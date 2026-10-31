@@ -10,7 +10,7 @@ returns no call.
 |---|---|
 | `run.py` | Hydra entry point: one model on one split -> `preds.jsonl`, `submission.jsonl`, `score.json` (train) |
 | `configs/model/*.yaml` | one file per model (`_target_` = adapter class); `configs/data/*.yaml`: split, limit, shards |
-| `lifemate/models/` | adapters with `generate(messages) -> str`: `gemma.py` (Gemma 4), `qwen_omni.py` (Qwen2.5-Omni), `kimi_audio.py` |
+| `lifemate/models/` | adapters with `generate(messages) -> str`: `gemma.py` (Gemma 4), `qwen_omni.py` (Qwen2.5-Omni), `granite_speech.py`, `voxtral.py`, `kimi_audio.py` |
 | `lifemate/prompt.py`, `agent.py` | messages of a sample; agent loop on one `ToolEnv` |
 | `lifemate/score.py` | local metric (state hash + tool-call F1), for train |
 | `scripts/` | `colab_ssh.sh`, `a100_eval.sh` (A100 job), `fetch_drive_folder.py` (data), `setup_kimi_audio.sh` |
