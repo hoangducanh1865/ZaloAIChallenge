@@ -18,6 +18,7 @@ MODEL=gemma4_e2b
 pip install -q -r requirements.txt > $LOG/pip.log 2>&1 &
 python -c "from huggingface_hub import snapshot_download as s; s('google/gemma-4-E2B-it')" > $LOG/fetch.log 2>&1 &
 wait
+pip uninstall -y -q torchao   # Colab's torchao 0.10 makes peft refuse to import; not used here
 
 python -u train.py model=$MODEL stage=asr > $LOG/stage1.log 2>&1 &
 S1=$!
