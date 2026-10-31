@@ -20,9 +20,10 @@ python -c "from huggingface_hub import snapshot_download as s; s('google/gemma-4
 wait
 
 python -u train.py model=$MODEL stage=asr > $LOG/stage1.log 2>&1 &
+S1=$!
 python -u train.py model=$MODEL stage=agent +run_suffix=_from_base > $LOG/stage2_from_base.log 2>&1 &
 S2B=$!
-wait %1
+wait $S1
 python -u scripts/asr_probe.py model=$MODEL +model.adapter=$CK/${MODEL}_asr/adapter data=train data.limit=100 \
   out_dir=$RUNS/asr_${MODEL}_ft > $LOG/asr_probe_ft.log 2>&1 &
 python -u train.py model=$MODEL stage=agent init_adapter=$CK/${MODEL}_asr/adapter +run_suffix=_from_asr \
