@@ -10,6 +10,7 @@ out_dir: /content/drive/MyDrive/it/zalo/ckpt/${run_name}   # persistent: adapter
 init_adapter: null       # stage 2 from a stage-1 adapter
 lora: {r: 32, alpha: 64}
 grad_accum: 8
+grad_ckpt: true         # false: faster when the GPU has room (stage 2 with target-only loss: ~26 GB with it)
 warmup: 20
 max_tokens: 12000        # longer conversations are skipped (the competition context limit is 16K)
 log_every: 10

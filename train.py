@@ -114,8 +114,9 @@ def val_loss(model, enc, convs):
 
 def build_model(cfg):
     model = AutoModelForMultimodalLM.from_pretrained(cfg.model.model_id, dtype=torch.bfloat16, device_map="cuda")
-    model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
-    model.enable_input_require_grads()
+    if cfg.grad_ckpt:  # saves memory, costs about a third more time
+        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+        model.enable_input_require_grads()
     out_adapter = Path(cfg.out_dir) / "adapter"
     start = out_adapter if (out_adapter / "adapter_config.json").exists() else (Path(cfg.init_adapter) if cfg.init_adapter else None)
     if start:
