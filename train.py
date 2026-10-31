@@ -57,6 +57,8 @@ def agent_conversations(cfg):
         else:
             msgs.append(text("assistant", calls_json([])))
         convs.append(msgs)
+    if cfg.stage.limit:  # a fixed random subset, for short experiments
+        convs = random.Random(0).sample(convs, min(cfg.stage.limit, len(convs)))
     return convs
 
 

@@ -2,6 +2,7 @@
 name: agent
 holdout: 100
 rules: base
+limit: null       # conversations (random subset), null = all
 epochs: 1
 lr: 1e-4
 train_audio_layers: [10, 11]   # used only when starting without init_adapter
