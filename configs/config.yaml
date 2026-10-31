@@ -7,13 +7,14 @@ defaults:
   - _self_
 
 data_root: /content/drive/MyDrive/it/zalo/data/raw/train+public_test   # holds train/ and public_test/
-run_name: ${hydra:runtime.choices.model}_think${agent.enable_thinking}_${data.split}
+run_name: ${hydra:runtime.choices.model}_think${agent.enable_thinking}${oc.select:run_suffix,''}_${data.split}
 out_dir: /content/drive/MyDrive/it/zalo/runs/${run_name}                # persistent: preds.jsonl grows per sample
 
 agent:
   max_steps: 6          # model turns per sample; each turn may emit several tool calls
   max_new_tokens: 512     # with thinking on, the thought counts too: use 2048
   enable_thinking: false  # Gemma 4: <|think|> in the system prompt (chat template flag)
+  transcript: false       # train only: gold transcript instead of audio (diagnostic upper bound of listening)
 
 hydra:
   run:

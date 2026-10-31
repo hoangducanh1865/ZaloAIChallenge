@@ -22,9 +22,9 @@ def parse_calls(reply):
     return [c for c in calls if isinstance(c, dict) and isinstance(c.get("name"), str)]
 
 
-def run_sample(model, env, sample, catalog, split_dir, max_steps, gen_kwargs):
+def run_sample(model, env, sample, catalog, split_dir, max_steps, gen_kwargs, transcript=False):
     t0 = time.time()
-    msgs = build_messages(sample, catalog, split_dir)
+    msgs = build_messages(sample, catalog, split_dir, transcript)
     replies = []
     for _ in range(max_steps):
         reply = model.generate(msgs, **gen_kwargs)

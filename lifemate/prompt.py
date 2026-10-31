@@ -53,21 +53,25 @@ def results_text(results):
     return "Kết quả tool: " + json.dumps(results, ensure_ascii=False, separators=(",", ":"))
 
 
-def audio_turn(label, wav):
-    return {"role": "user", "content": [{"type": "text", "text": label}, {"type": "audio", "audio": str(wav)}]}
+def user_turn(label, turn, split_dir, transcript):
+    """The user's audio, or with transcript=True its gold transcript (train only): a diagnostic that separates
+    listening errors from tool-use errors, not a submission pipeline."""
+    if transcript:
+        return text("user", f"{label} {turn['audio_text']}")
+    return {"role": "user", "content": [{"type": "text", "text": label}, {"type": "audio", "audio": str(split_dir / turn["audio"])}]}
 
 
-def build_messages(sample, catalog, split_dir):
+def build_messages(sample, catalog, split_dir, transcript=False):
     """System prompt, the earlier turns (user audio, assistant calls / results / reply) and the last request as audio."""
     split_dir = Path(split_dir)
     msgs = [text("system", system_prompt(sample, catalog))]
     for turn in sample["history"]:
         if turn["role"] == "user":
-            msgs.append(audio_turn("Lượt trước của người dùng:", split_dir / turn["audio"]))
+            msgs.append(user_turn("Lượt trước của người dùng:", turn, split_dir, transcript))
         else:
             if turn.get("tool_calls"):
                 msgs.append(text("assistant", calls_json(turn["tool_calls"])))
                 msgs.append(text("user", results_text(turn.get("tool_results", []))))
             msgs.append(text("assistant", calls_json([], turn.get("text"))))
-    msgs.append(audio_turn("Yêu cầu cuối của người dùng (cần xử lý):", split_dir / sample["audio"]))
+    msgs.append(user_turn("Yêu cầu cuối của người dùng (cần xử lý):", sample, split_dir, transcript))
     return msgs

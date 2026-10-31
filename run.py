@@ -55,7 +55,7 @@ def main(cfg):
             for i, s in enumerate(todo, 1):
                 env = make_env(s["id"])  # one ToolEnv per sample, created once
                 try:
-                    r = run_sample(model, env, s, catalog, split_dir, cfg.agent.max_steps, gen)
+                    r = run_sample(model, env, s, catalog, split_dir, cfg.agent.max_steps, gen, cfg.agent.transcript)
                 except Exception as e:  # e.g. CUDA OOM on a long history: keep the calls already made
                     log.exception(s["id"])
                     r = {"id": s["id"], "tool_calls": env.get_tool_calls(), "state_hash": env.get_state_hash(),
