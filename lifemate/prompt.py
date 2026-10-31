@@ -25,17 +25,28 @@ Quy tắc:
   cảm ơn, đổi ý hay huỷ yêu cầu, hoặc giá trị yêu cầu không hợp lệ.
 - Yêu cầu có điều kiện ("nếu ... thì ..."): đọc dữ liệu để kiểm tra, chỉ làm khi điều kiện đúng."""
 
+# Added after the error analysis of Gemma-4-E4B on train[:50] (writes before reads, extra optional arguments, profile
+# field names instead of addresses, self-corrections missed); selected with agent.rules=strict.
+STRICT = """
+- Lượt nào cần ID thì lượt đó CHỈ gọi tool đọc; tool ghi dùng ID đó gọi ở lượt sau, khi đã thấy kết quả.
+- Chỉ truyền tham số bắt buộc và tham số người dùng nói rõ; không tự thêm tham số tuỳ chọn (label, location, power,
+  repeat, note...) khi người dùng không nhắc tới.
+- "Nhà", "công ty", "chỗ làm" là địa chỉ ghi nguyên văn trong user_profile (home_address, work_address), không ghi tên trường.
+- Người dùng tự sửa lời ("à không", "nhầm", "thôi"): dùng giá trị nói sau cùng; huỷ cả yêu cầu thì trả {"tool_calls": []}.
+- Không gọi tool chỉ để xem thử; mỗi call phải phục vụ trực tiếp yêu cầu cuối."""
+RULES_SETS = {"base": RULES, "strict": RULES + STRICT}
+
 
 def _tool_line(spec):
     keep = {k: spec[k] for k in ("name", "kind", "description", "parameters", "returns") if spec.get(k)}
     return json.dumps(keep, ensure_ascii=False, separators=(",", ":"))
 
 
-def system_prompt(sample, catalog):
+def system_prompt(sample, catalog, rules="base"):
     ctx = {k: v for k, v in sample["context"].items() if k != "installed_apps"}
     names = [t for app in sample["context"]["installed_apps"].values() for t in app["tools"]] + ["sys.ask_missing_info"]
     tools = "\n".join(_tool_line(catalog[n]) for n in names if n in catalog)
-    return f"{RULES}\n\nNgữ cảnh người dùng:\n{json.dumps(ctx, ensure_ascii=False)}\n\nCác tool được phép gọi:\n{tools}"
+    return f"{RULES_SETS[rules]}\n\nNgữ cảnh người dùng:\n{json.dumps(ctx, ensure_ascii=False)}\n\nCác tool được phép gọi:\n{tools}"
 
 
 def text(role, s):
@@ -61,10 +72,10 @@ def user_turn(label, turn, split_dir, transcript):
     return {"role": "user", "content": [{"type": "text", "text": label}, {"type": "audio", "audio": str(split_dir / turn["audio"])}]}
 
 
-def build_messages(sample, catalog, split_dir, transcript=False):
+def build_messages(sample, catalog, split_dir, transcript=False, rules="base"):
     """System prompt, the earlier turns (user audio, assistant calls / results / reply) and the last request as audio."""
     split_dir = Path(split_dir)
-    msgs = [text("system", system_prompt(sample, catalog))]
+    msgs = [text("system", system_prompt(sample, catalog, rules))]
     for turn in sample["history"]:
         if turn["role"] == "user":
             msgs.append(user_turn("Lượt trước của người dùng:", turn, split_dir, transcript))

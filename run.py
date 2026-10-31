@@ -50,12 +50,13 @@ def main(cfg):
         model = instantiate(cfg.model)
         catalog, make_env = load_catalog(cfg.data_root, d.split), env_factory(cfg.data_root, d.split)
         gen = {"max_new_tokens": cfg.agent.max_new_tokens, "enable_thinking": cfg.agent.enable_thinking}
+        prompt_kw = {"transcript": cfg.agent.transcript, "rules": cfg.agent.rules}
         name = "preds.jsonl" if d.num_shards == 1 else f"preds_{d.shard}of{d.num_shards}.jsonl"
         with open(out / name, "a", encoding="utf-8") as f:
             for i, s in enumerate(todo, 1):
                 env = make_env(s["id"])  # one ToolEnv per sample, created once
                 try:
-                    r = run_sample(model, env, s, catalog, split_dir, cfg.agent.max_steps, gen, cfg.agent.transcript)
+                    r = run_sample(model, env, s, catalog, split_dir, cfg.agent.max_steps, gen, **prompt_kw)
                 except Exception as e:  # e.g. CUDA OOM on a long history: keep the calls already made
                     log.exception(s["id"])
                     r = {"id": s["id"], "tool_calls": env.get_tool_calls(), "state_hash": env.get_state_hash(),
