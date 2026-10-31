@@ -42,11 +42,15 @@ def asr_conversations(cfg):
              text("assistant", r["text"])] for r in rows]
 
 
-def agent_conversations(cfg):
+def agent_conversations(cfg, part="train"):
+    """train[:holdout] = test (kept for run.py), the next `val` samples = validation, the rest = training."""
     split = "train"
     catalog, split_dir = load_catalog(cfg.data_root, split), Path(cfg.data_root) / split
+    h, v = cfg.stage.holdout, cfg.stage.val
+    samples = load_samples(cfg.data_root, split)
+    samples = samples[h : h + v] if part == "val" else samples[h + v :]
     convs = []
-    for s in load_samples(cfg.data_root, split)[cfg.stage.holdout:]:
+    for s in samples:
         msgs = build_messages(s, catalog, split_dir, rules=cfg.stage.rules)
         calls, results = s["label"]["tool_calls"], s["label"]["tool_results"]
         for c, r in zip(calls, results):
@@ -57,7 +61,7 @@ def agent_conversations(cfg):
         else:
             msgs.append(text("assistant", calls_json([])))
         convs.append(msgs)
-    if cfg.stage.limit:  # a fixed random subset, for short experiments
+    if cfg.stage.limit and part == "train":  # a fixed random subset, for short experiments
         convs = random.Random(0).sample(convs, min(cfg.stage.limit, len(convs)))
     return convs
 
@@ -91,6 +95,23 @@ class Encoder:
         return x
 
 
+def target_loss(model, x):
+    """Cross-entropy on the labelled tokens only: logits for those positions alone (logits_to_keep), instead of the
+    full sequence x 262K vocabulary that model(labels=...) materialises."""
+    labels = x.pop("labels")[0]
+    pos = (labels[1:] != -100).nonzero().squeeze(1)  # position t predicts token t + 1
+    logits = model(**x, logits_to_keep=pos).logits[0].float()
+    return torch.nn.functional.cross_entropy(logits, labels[pos + 1])
+
+
+@torch.no_grad()
+def val_loss(model, enc, convs):
+    model.eval()
+    losses = [target_loss(model, x.to(model.device)).item() for x in map(enc, convs) if x is not None]
+    model.train()
+    return sum(losses) / max(len(losses), 1)
+
+
 def build_model(cfg):
     model = AutoModelForMultimodalLM.from_pretrained(cfg.model.model_id, dtype=torch.bfloat16, device_map="cuda")
     model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
@@ -116,6 +137,7 @@ def main(cfg):
     out = Path(cfg.out_dir)
     out.mkdir(parents=True, exist_ok=True)
     convs = asr_conversations(cfg) if cfg.stage.name == "asr" else agent_conversations(cfg)
+    val = agent_conversations(cfg, "val") if cfg.stage.name == "agent" and cfg.stage.val else []
     processor = AutoProcessor.from_pretrained(cfg.model.model_id)
     enc = Encoder(processor, cfg.max_tokens)
     model = build_model(cfg)
@@ -128,7 +150,10 @@ def main(cfg):
         opt, lambda s: min(1.0, (s + 1) / cfg.warmup) * max(0.05, 1 - s / max(total, 1)), last_epoch=-1)
     for _ in range(step):
         sched.step()
-    log.info(f"{cfg.stage.name}: {len(convs)} conversations, {cfg.stage.epochs} epochs, {total} steps, resume at {step}")
+    log.info(f"{cfg.stage.name}: {len(convs)} conversations (val {len(val)}), {cfg.stage.epochs} epochs, {total} steps, "
+             f"resume at {step}")
+    per_epoch = math.ceil(len(convs) / cfg.grad_accum)
+    best = json.load(open(state_path)).get("best", float("inf")) if state_path.exists() else float("inf")
 
     order = [i for e in range(cfg.stage.epochs) for i in random.Random(e).sample(range(len(convs)), len(convs))]
     model.train()
@@ -138,7 +163,7 @@ def main(cfg):
         if x is None:
             skipped += 1
             continue
-        loss = model(**x.to(model.device)).loss / cfg.grad_accum
+        loss = target_loss(model, x.to(model.device)) / cfg.grad_accum
         loss.backward()
         running += loss.item()
         if (k + 1) % cfg.grad_accum:
@@ -150,11 +175,17 @@ def main(cfg):
         if step % cfg.log_every == 0:
             log.info(f"step {step}/{total} loss {running / seen:.4f} lr {sched.get_last_lr()[0]:.2e} skipped {skipped}")
             running, seen = 0.0, 0
+        if val and (step % per_epoch == 0 or step == total):  # end of an epoch: keep the best adapter on val
+            v = val_loss(model, enc, val)
+            log.info(f"VAL step {step} loss {v:.4f} (best {best:.4f})")
+            if v < best:
+                best = v
+                model.save_pretrained(out / "adapter_best")
         if step % cfg.save_every == 0 or step == total:
             model.save_pretrained(out / "adapter")
-            json.dump({"step": step}, open(state_path, "w"))
+            json.dump({"step": step, "best": best}, open(state_path, "w"))
     model.save_pretrained(out / "adapter")
-    json.dump({"step": step, "done": True}, open(state_path, "w"))
+    json.dump({"step": step, "best": best, "done": True}, open(state_path, "w"))
     log.info(f"TRAIN DONE {cfg.stage.name} step {step}")
 
 

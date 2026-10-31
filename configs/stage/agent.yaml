@@ -1,8 +1,10 @@
-# Stage 2, tool use: LifeMate train samples after the first `holdout` (train[:holdout] stays for evaluation)
+# Stage 2, tool use. Split of the LifeMate train set: train[:holdout] = test (run.py data.limit=holdout),
+# the next `val` = validation (loss each epoch, best adapter kept in adapter_best), the rest = training.
 name: agent
 holdout: 100
+val: 145
 rules: base
 limit: null       # conversations (random subset), null = all
-epochs: 1
+epochs: 2
 lr: 1e-4
 train_audio_layers: [10, 11]   # used only when starting without init_adapter

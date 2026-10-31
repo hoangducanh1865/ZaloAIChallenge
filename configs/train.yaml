@@ -8,7 +8,7 @@ data_root: /content/drive/MyDrive/it/zalo/data/raw/train+public_test
 run_name: ${hydra:runtime.choices.model}_${stage.name}${oc.select:run_suffix,''}
 out_dir: /content/drive/MyDrive/it/zalo/ckpt/${run_name}   # persistent: adapter/ + state.json
 init_adapter: null       # stage 2 from a stage-1 adapter
-lora: {r: 16, alpha: 32}
+lora: {r: 32, alpha: 64}
 grad_accum: 8
 warmup: 20
 max_tokens: 12000        # longer conversations are skipped (the competition context limit is 16K)
