@@ -16,7 +16,7 @@ TRAIN_LIMIT=${TRAIN_LIMIT:-200}
 cd /content/drive/MyDrive/it/zalo/code/ZaloAIChallenge
 LOG=/content/drive/MyDrive/it/zalo/logs/${MODEL}; mkdir -p $LOG
 RUNS=/content/drive/MyDrive/it/zalo/runs
-export HF_HOME=/content/drive/MyDrive/it/zalo/hf   # weights staged there from a CPU runtime; fetched if missing
+export HF_HOME=${HF_HOME:-/content/hf}   # local disk: HF download takes about 1 min, Drive sync between runtimes lags
 pip install -q -r requirements.txt > $LOG/pip.log 2>&1 &
 python -c "from huggingface_hub import snapshot_download as s; from omegaconf import OmegaConf as O; \
 s(O.load('configs/model/${MODEL}.yaml').model_id)" > $LOG/fetch.log 2>&1 &
