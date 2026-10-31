@@ -18,7 +18,7 @@ returns no call.
 
 ```bash
 python run.py model=gemma4_e4b data=public_test                 # leaderboard file
-python run.py model=gemma4_e4b data=train data.limit=200        # local score
+python run.py model=gemma4_e4b data=train data.limit=100        # local score
 python -m lifemate.score --root <data_root> --split train --preds <run>/preds.jsonl
 ```
 

@@ -7,7 +7,7 @@
 # Author: Duc Anh Hoang
 source /root/.hf_env 2> /dev/null || true   # HF_TOKEN; first, before any set -x
 set -x
-LIMIT=${LIMIT:-200}
+LIMIT=${LIMIT:-100}
 cd /content/drive/MyDrive/it/zalo/code/ZaloAIChallenge
 LOG=/content/drive/MyDrive/it/zalo/logs/baselines; mkdir -p $LOG
 export HF_HOME=${HF_HOME:-/content/hf}

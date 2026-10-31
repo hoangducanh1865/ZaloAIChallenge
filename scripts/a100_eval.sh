@@ -12,7 +12,7 @@ source /root/.hf_env 2> /dev/null || true   # HF_TOKEN; first, before any set -x
 set -x
 MODEL=${1:-gemma4_e4b}
 LAT_N=${LAT_N:-50}
-TRAIN_LIMIT=${TRAIN_LIMIT:-200}
+TRAIN_LIMIT=${TRAIN_LIMIT:-100}
 PUBLIC_SHARDS=${PUBLIC_SHARDS:-0}   # 0: no public_test run
 cd /content/drive/MyDrive/it/zalo/code/ZaloAIChallenge
 LOG=/content/drive/MyDrive/it/zalo/logs/${MODEL}; mkdir -p $LOG

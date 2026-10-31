@@ -1,6 +1,6 @@
 # Zero-shot / fine-tuned evaluation of an audio LM agent on LifeMate (Zalo AI Challenge 2026).
 # python run.py model=gemma4_e4b data=public_test          (one model and one split per run)
-# python run.py model=kimi_audio data=train data.limit=200  (train has labels: scored locally)
+# python run.py model=kimi_audio data=train data.limit=100  (train has labels: scored locally)
 defaults:
   - model: gemma4_e4b
   - data: public_test
