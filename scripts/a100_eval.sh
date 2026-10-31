@@ -5,7 +5,7 @@
 # 1. Latency: the same LAT_N train samples per mode, each mode alone on the GPU (sharing it would inflate the times);
 #    kept as latency_alone.json in the run folder.
 # 2. Scores, the runs sharing the GPU: train TRAIN_LIMIT samples for both modes (resumes after step 1), public_test
-#    with thinking off (submission.jsonl for the leaderboard); THINK_PUBLIC=1 adds public_test with thinking on.
+#    with thinking off over PUBLIC_SHARDS processes (submission.jsonl); THINK_PUBLIC=1 adds it with thinking on.
 #
 # Author: Duc Anh Hoang
 source /root/.hf_env 2> /dev/null || true   # HF_TOKEN; first, before any set -x
@@ -13,7 +13,7 @@ set -x
 MODEL=${1:-gemma4_e4b}
 LAT_N=${LAT_N:-50}
 TRAIN_LIMIT=${TRAIN_LIMIT:-200}
-PUBLIC_SHARDS=${PUBLIC_SHARDS:-2}
+PUBLIC_SHARDS=${PUBLIC_SHARDS:-0}   # 0: no public_test run
 cd /content/drive/MyDrive/it/zalo/code/ZaloAIChallenge
 LOG=/content/drive/MyDrive/it/zalo/logs/${MODEL}; mkdir -p $LOG
 RUNS=/content/drive/MyDrive/it/zalo/runs
