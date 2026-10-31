@@ -1,0 +1,7 @@
+# Stage 1, listening: Vietnamese ASR on the manifest of scripts/prepare_vimd.py
+name: asr
+manifest: /content/drive/MyDrive/it/zalo/data/asr/vimd/manifest.jsonl
+limit: null
+epochs: 1
+lr: 1e-4
+train_audio_layers: [10, 11]   # top audio encoder layers trained in full (with the projector); [] = projector only

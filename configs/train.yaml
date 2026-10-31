@@ -1,0 +1,22 @@
+# Fine-tuning (train.py). python train.py stage=asr | stage=agent init_adapter=<dir>/adapter
+defaults:
+  - model: gemma4_e2b
+  - stage: asr
+  - _self_
+
+data_root: /content/drive/MyDrive/it/zalo/data/raw/train+public_test
+run_name: ${hydra:runtime.choices.model}_${stage.name}${oc.select:run_suffix,''}
+out_dir: /content/drive/MyDrive/it/zalo/ckpt/${run_name}   # persistent: adapter/ + state.json
+init_adapter: null       # stage 2 from a stage-1 adapter
+lora: {r: 16, alpha: 32}
+grad_accum: 8
+warmup: 20
+max_tokens: 12000        # longer conversations are skipped (the competition context limit is 16K)
+log_every: 10
+save_every: 50
+
+hydra:
+  run:
+    dir: ${out_dir}/hydra/${now:%Y%m%d_%H%M%S}
+  job:
+    chdir: false

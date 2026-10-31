@@ -1,0 +1,7 @@
+# Stage 2, tool use: LifeMate train samples after the first `holdout` (train[:holdout] stays for evaluation)
+name: agent
+holdout: 100
+rules: base
+epochs: 2
+lr: 1e-4
+train_audio_layers: [10, 11]   # used only when starting without init_adapter

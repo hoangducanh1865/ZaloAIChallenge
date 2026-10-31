@@ -9,9 +9,13 @@ SPECIAL = re.compile(r"<\|[^>]*>|<[^>]*\|>")  # control tokens such as <|turn>, 
 
 
 class Gemma:
-    def __init__(self, model_id, dtype="bfloat16"):
+    def __init__(self, model_id, dtype="bfloat16", adapter=None):
         self.processor = AutoProcessor.from_pretrained(model_id)
         self.model = AutoModelForMultimodalLM.from_pretrained(model_id, dtype=getattr(torch, dtype), device_map="cuda")
+        if adapter:  # LoRA + projector from train.py, merged for plain inference speed
+            from peft import PeftModel
+
+            self.model = PeftModel.from_pretrained(self.model, adapter).merge_and_unload()
         self.model.eval()
         self.prompt_tokens = 0  # of the last call, to check the 16K context limit of the competition
 

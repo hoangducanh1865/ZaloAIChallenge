@@ -3,3 +3,4 @@ transformers>=5.5
 accelerate
 librosa
 soundfile
+peft
