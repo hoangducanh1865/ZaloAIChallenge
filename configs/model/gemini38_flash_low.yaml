@@ -1,0 +1,3 @@
+# External API via the local router, reference point only (not allowed at inference in the competition).
+_target_: lifemate.models.gemini.Gemini
+model_id: ag/gemini-3.8-flash-low

@@ -17,7 +17,6 @@ from pathlib import Path
 
 import hydra
 import numpy as np
-import torch
 from hydra.utils import instantiate
 
 from lifemate.agent import run_sample
@@ -37,7 +36,13 @@ def read_preds(out):
 
 @hydra.main(config_path="configs", config_name="config", version_base=None)
 def main(cfg):
-    random.seed(0), np.random.seed(0), torch.manual_seed(0)  # decoding is greedy; seeds for the competition rule
+    random.seed(0), np.random.seed(0)  # decoding is greedy; seeds for the competition rule
+    try:
+        import torch  # absent on a machine that only calls an API model
+
+        torch.manual_seed(0)
+    except ImportError:
+        pass
     d, out = cfg.data, Path(cfg.out_dir)
     out.mkdir(parents=True, exist_ok=True)
     split_dir = Path(cfg.data_root) / d.split
