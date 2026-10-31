@@ -222,3 +222,4 @@ __marimo__/
 # project
 data/
 outputs/
+.DS_Store
