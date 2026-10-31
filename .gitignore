@@ -220,6 +220,6 @@ __marimo__/
 .streamlit/secrets.toml
 
 # project
-data/
-outputs/
+/data/
+/outputs/
 .DS_Store

@@ -1,0 +1,4 @@
+split: train         # labelled: scored locally with lifemate/score.py (zero-shot only; once trained on, use a held-out part)
+limit: 200
+shard: 0
+num_shards: 1

@@ -1,0 +1,4 @@
+split: public_test   # no labels: the output submission.jsonl goes to the leaderboard
+limit: null          # first N samples (smoke tests)
+shard: 0             # shard/num_shards: split the samples over processes sharing the GPU
+num_shards: 1
