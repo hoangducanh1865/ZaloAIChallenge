@@ -1,0 +1,4 @@
+# 2.3B effective, 5.1B with per-layer embeddings: within the limits either way.
+_target_: lifemate.models.gemma.Gemma
+model_id: google/gemma-4-E2B-it
+dtype: bfloat16

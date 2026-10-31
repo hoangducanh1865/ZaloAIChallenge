@@ -1,0 +1,4 @@
+# 4.5B effective, 8B with per-layer embeddings: may break the 6B total limit, depending on how the organisers count.
+_target_: lifemate.models.gemma.Gemma
+model_id: google/gemma-4-E4B-it
+dtype: bfloat16

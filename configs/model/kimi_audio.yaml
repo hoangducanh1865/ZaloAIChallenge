@@ -1,0 +1,3 @@
+# Needs the Kimi-Audio repo (kimia_infer): scripts/setup_kimi_audio.sh. 7B LLM: above the 5B limit of the final solution.
+_target_: lifemate.models.kimi_audio.KimiAudio
+model_id: moonshotai/Kimi-Audio-7B-Instruct
