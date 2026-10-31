@@ -1,0 +1,4 @@
+# 5.5B in total with the Talker and token2wav, which are not loaded for use; Thinker: 3B LLM + audio and vision encoders.
+_target_: lifemate.models.qwen_omni.QwenOmni
+model_id: Qwen/Qwen2.5-Omni-3B
+dtype: bfloat16
