@@ -13,6 +13,7 @@ set -x
 MODEL=${1:-gemma4_e4b}
 LAT_N=${LAT_N:-50}
 TRAIN_LIMIT=${TRAIN_LIMIT:-200}
+PUBLIC_SHARDS=${PUBLIC_SHARDS:-2}
 cd /content/drive/MyDrive/it/zalo/code/ZaloAIChallenge
 LOG=/content/drive/MyDrive/it/zalo/logs/${MODEL}; mkdir -p $LOG
 RUNS=/content/drive/MyDrive/it/zalo/runs
@@ -34,7 +35,9 @@ for T in false true; do
   cp $RUNS/${MODEL}_think${T^}_train/latency.json $RUNS/${MODEL}_think${T^}_train/latency_alone.json   # run folder: thinkTrue / thinkFalse
 done
 
-run false data=public_test > $LOG/public_test_thinkfalse.log 2>&1 &
+for i in $(seq 0 $((PUBLIC_SHARDS - 1))); do   # about 17 GB of GPU memory per process
+  run false data=public_test data.shard=$i data.num_shards=$PUBLIC_SHARDS > $LOG/public_test_thinkfalse_$i.log 2>&1 &
+done
 run false data=train data.limit=$TRAIN_LIMIT > $LOG/train_thinkfalse.log 2>&1 &
 run true data=train data.limit=$TRAIN_LIMIT > $LOG/train_thinktrue.log 2>&1 &
 [[ ${THINK_PUBLIC:-0} == 1 ]] && run true data=public_test > $LOG/public_test_thinktrue.log 2>&1 &
